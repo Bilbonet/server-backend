@@ -31,7 +31,7 @@ class Log(models.Model):
 
 class Task(models.Model):
     _name = "base.external.import.task"
-    _description = 'Task'
+    _description = 'External Import Task'
     _order = 'exec_order'
 
     name = fields.Char(required=True, string='Name', size=64)
@@ -235,14 +235,16 @@ class Task(models.Model):
         cron_obj = self.env['ir.cron']
         new_create = cron_obj.create({
             'name': self.name,
-            'interval_type': 'hours',
+            'model_id': self.env.ref(
+                'base_external_import.model_base_external_import_task').id,
+            'state': 'code',
+            'code': 'model.import_run([(%s,)])' % self.id,
+            'user_id': self.env.ref('base.user_root').id,
             'interval_number': 24,
+            'interval_type': 'hours',
             'numbercall': -1,
-            'model': 'base.external.import.task',
-            'function': 'import_run',
             'doall': False,
-            'active': True,
-            'args': '[(%s,)]' % (self.id)
+            'active': False
         })
         return {
             'name': 'External Data Import',
