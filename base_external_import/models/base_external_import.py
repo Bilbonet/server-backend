@@ -64,6 +64,7 @@ class Task(models.Model):
     last_warn_count = fields.Integer(string='Last warning count',
                                      readonly=True)
     last_log = fields.Text(string='Last run log', readonly=True)
+    log_enabled = fields.Boolean(string='Log enabled', default=True)
 
     def _import_data(self, flds, data, model_obj, table_obj, log):
         # Import data and returns error msg or empty string
@@ -216,16 +217,17 @@ class Task(models.Model):
             obj.write(log)
 
             # Save log in the table
-            import_logs = {
-                'import_id': obj.id,
-                'start_run': log['start_run'],
-                'last_run': log['last_run'],
-                'last_record_count': log['last_record_count'],
-                'last_error_count': log['last_error_count'],
-                'last_warn_count': log['last_warn_count'],
-                'last_log': log['last_log']
-            }
-            self.env['base.external.import.log'].create(import_logs)
+            if obj.log_enabled:
+                import_logs = {
+                    'import_id': obj.id,
+                    'start_run': log['start_run'],
+                    'last_run': log['last_run'],
+                    'last_record_count': log['last_record_count'],
+                    'last_error_count': log['last_error_count'],
+                    'last_warn_count': log['last_warn_count'],
+                    'last_log': log['last_log']
+                }
+                self.env['base.external.import.log'].create(import_logs)
 
         # Finished
         _logger.debug('Import job FINISHED.')

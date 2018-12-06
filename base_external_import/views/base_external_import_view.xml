@@ -18,6 +18,7 @@
                                 <field name="exec_order"/>
                                 <field name="dbsource_id"/>
                                 <field name="enabled"/>
+                                <field name="log_enabled"/>
                             </group>
                         </group>
                         <field name="sql_source" placeholder="SQL ..."/>
