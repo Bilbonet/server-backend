@@ -172,6 +172,28 @@ class BaseExternalDbsource(models.Model):
             return rows
 
     @api.multi
+    def update(self, query=None, execute_params=None):
+
+        """ Executes update query and returns a number of rows updatd.
+
+            "execute_params" can be a dict of values, that can be referenced
+            in the SQL statement using "%(key)s" or, in the case of Oracle,
+            ":key".
+            Example:
+                query = "SELECT * FROM mytable WHERE city = %(city)s AND
+                            date > %(dt)s"
+                execute_params   = {
+                    'city': 'Lisbon',
+                    'dt': datetime.datetime(2000, 12, 31),
+                }
+        """
+
+        method = self._get_adapter_method('update')
+        number = method(query, execute_params)
+
+        return number
+
+    @api.multi
     def connection_test(self):
         """ It tests the connection
 
@@ -310,8 +332,15 @@ class BaseExternalDbsource(models.Model):
             rows = cur.fetchall()
             return rows, cols
 
-    # Compatibility & Private
+    def _update_generic(self, query, params):
+        with self.connection_open() as connection:
+            cur = connection.cursor()
+            number = cur.execute(query, params).rowcount
+            cur.commit()
 
+            return number
+
+    # Compatibility & Private
     @api.multi
     def conn_open(self):
         """ It opens and returns a connection to the remote data source.
@@ -337,7 +366,6 @@ class BaseExternalDbsource(models.Model):
         Returns:
             (instancemethod)
         """
-
         self.ensure_one()
         method = '%s_%s' % (method_prefix, self.connector)
 
