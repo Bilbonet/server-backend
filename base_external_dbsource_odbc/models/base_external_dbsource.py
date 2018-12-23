@@ -42,4 +42,4 @@ class BaseExternalDbsource(models.Model):
 
     @api.multi
     def update_pyodbc(self, sqlquery, sqlparams):
-        return self._update_generic(sqlquery, sqlparams)
+        return self._commit_generic(sqlquery, sqlparams)
