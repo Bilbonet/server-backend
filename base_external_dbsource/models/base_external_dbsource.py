@@ -172,7 +172,7 @@ class BaseExternalDbsource(models.Model):
             return rows
 
     @api.multi
-    def update(self, query=None, execute_params=None):
+    def commit(self, query=None, execute_params=None):
 
         """ Executes update query and returns a number of rows updatd.
 
@@ -332,7 +332,7 @@ class BaseExternalDbsource(models.Model):
             rows = cur.fetchall()
             return rows, cols
 
-    def _update_generic(self, query, params):
+    def _commit_generic(self, query, params):
         with self.connection_open() as connection:
             cur = connection.cursor()
             number = cur.execute(query, params).rowcount
