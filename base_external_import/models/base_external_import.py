@@ -1,11 +1,14 @@
-# Copyright <2011> <Daniel Reis>
+# Copyright <2019> <Jesus Ramiro>
 # Copyright <2016> <Liu Jianyun>
-# Copyright <2017> <Jesus Ramiro>
+# Copyright <2011> <Daniel Reis>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import sys
 import logging
 from datetime import datetime
 from odoo import models, fields
+from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from odoo.exceptions import ValidationError
+
 
 _logger = logging.getLogger(__name__)
 _loglvl = _logger.getEffectiveLevel()
@@ -109,7 +112,6 @@ class Task(models.Model):
         return True
 
     def import_run(self, ids=None):
-
         # ids value depends where the function is called.
         run_ids = None
         if isinstance(ids, dict):
@@ -165,10 +167,16 @@ class Task(models.Model):
             cols = ([x for i, x in enumerate(res['cols'])
                      if x.upper() != 'ID'] + ['id'])
 
+            # Check all columns has name
+            for i in cols:
+                if not i:
+                    raise ValidationError(
+                        "review the query any of the columns hasn't name")
+
             # Prepare the internal XML-ID in column "id"
             def build_xmlid(row_id):
                 # Replace dots "." by "-" in XML-ID dots are not allowed
-                row_id = row_id.replace('.', '-')
+                row_id = str(row_id).replace('.', '-')
                 # Prepare prefix
                 xml_prefix = '__import__.' + model_name.replace('.', '_') + '_'
                 return xml_prefix + row_id
@@ -182,6 +190,8 @@ class Task(models.Model):
                     v = row[i]
                     if isinstance(v, str):
                         v = v.strip()
+                    if isinstance(v, datetime):
+                        v = v.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
                     data.append(v)
                 data.append(build_xmlid(row[0]).strip())
 
