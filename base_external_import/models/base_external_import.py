@@ -155,7 +155,7 @@ class Task(models.Model):
 
             # Prepare SQL sentence; replace "%s" with the last_sync date
             if obj.last_sync:
-                sync = datetime.strptime(obj.last_sync, "%Y-%m-%d %H:%M:%S")
+                sync = obj.last_sync
             else:
                 sync = datetime(1900, 1, 1, 0, 0, 0)
             params = [(sync)]
